@@ -6,7 +6,10 @@
     "autoload": {
         "psr-4": {
             "Lighter\\Framework\\": "src/"
-        }
+        },
+        "files": [
+            "src/Helpers/helpers.php"
+        ]
     },
     "authors": [
         {
