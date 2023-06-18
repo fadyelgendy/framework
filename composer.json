@@ -1,0 +1,21 @@
+{
+    "name": "lighter/framework",
+    "description": "Fast, reliable and easy to learn MVC PHP framework.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Lighter\\Framework\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Fady Elgendy",
+            "email": "fadyelgendy2017@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^8.0"
+    }
+}
