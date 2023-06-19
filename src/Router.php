@@ -7,18 +7,19 @@ use ReflectionException;
 
 class Router
 {
-    protected static array $routes = [];
+    protected array $routes = [];
+    protected array $params = [];
 
     /**
      * Make a GET request
      *
      * @param string $path
-     * @param array $options
+     * @param callable|array $resolver
      * @return self
      */
-    public static function get(string $path, array $options): self
+    public function get(string $path, callable|array $resolver): self
     {
-        static::add($path, $options, 'GET');
+        static::add($path, $resolver, 'GET');
 
         return new static();
     }
@@ -27,12 +28,12 @@ class Router
      * Make a POST request
      *
      * @param string $path
-     * @param array $options
+     * @param callable|array $resolver
      * @return self
      */
-    public static function post(string $path, array $options): self
+    public function post(string $path, callable|array $resolver): self
     {
-        static::add($path, $options, 'POST');
+        $this->add($path, $resolver, 'POST');
 
         return new static();
     }
@@ -49,11 +50,16 @@ class Router
     public function redirect(string $uri, string $method = 'GET'): mixed
     {
         # Route Not Exists
-        if (!array_key_exists($uri, self::$routes)) {
+        if (!array_key_exists($uri, $this->routes)) {
             throw new Exception("ERROR: no route found for {$uri}");
         }
 
-        $route = static::$routes[$uri];
+        $route = $this->routes[$uri];
+
+        // Callable
+        if (array_key_exists('resolver', $route)) {
+            return call_user_func($route['resolver'](...$this->params));
+        }
 
         # Controller Not Exists
         if (!class_exists($route['controller'])) {
@@ -67,22 +73,31 @@ class Router
             throw new Exception("ERROR: {$route['action']} is not defined in {$route['controller']}");
         }
 
-        return $controller->{$route['action']}(...$this->resolveDependencies($route));
+        return $controller->{$route['action']}(...$this->params);
+
     }
 
     /**
      * Add a given route to routes
      *
      * @param string $path
-     * @param array $options
+     * @param callable|array $resolver
      * @param string $method
      * @return void
      */
-    protected static function add(string $path, array $options, string $method): void
+    protected function add(string $path, callable|array $resolver, string $method): void
     {
-        static::$routes[$path] = [
-            'controller' => $options[0],
-            'action' => $options[1],
+        if (is_callable($resolver)) {
+            $this->routes[$path] = [
+                'resolver' => $resolver,
+                'method' => $method
+            ];
+            return;
+        }
+
+        $this->routes[$path] = [
+            'controller' => $resolver[0],
+            'action' => $resolver[1],
             'method' => $method
         ];
     }
@@ -90,21 +105,25 @@ class Router
     /**
      * Resolve route action dependencies
      * @param array $route
-     * @return array
+     * @return void
      * @throws ReflectionException
-     * @throws Exception
      */
-    protected function resolveDependencies(array $route): array
+    protected function resolveDependencies(array $route): void
     {
-        // Resolve
-        $reflection = new \ReflectionMethod($route['controller'], $route['action']);
-        $params = [];
-
-        foreach($reflection->getParameters() as $parameter) {
-            $class = "\App\Core\\" . ucwords($parameter->getName());
-            $params[] = Application::resolve($class);
+        # Resolver os callable type
+        if (array_key_exists('resolver', $route)) {
+            $reflection = new \ReflectionFunction($route['resolver']);
+        } else {
+            # Resolver is tuple type [controller, action]
+            $reflection = new \ReflectionMethod($route['controller'], $route['action']);
         }
 
-        return $params;
+        # Resolve dependencies
+        foreach ($reflection->getParameters() as $parameter) {
+            if (is_object($parameter)) {
+                $class = "\App\Core\\" . ucwords($parameter->getName());
+                $this->params[] = Application::resolve($class);
+            }
+        }
     }
 }
