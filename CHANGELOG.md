@@ -1,8 +1,12 @@
-# v0.1
-- Application starter
-- Service container started
-- Database Starter
-- File Starter
-- Request Starter
-- Router starter
-- Validator starter
+# Lighter Framework
+
+### v0.1
+- [X] Application starter
+- [X] Service container started
+- [X] Database Starter
+- [X] File Starter
+- [X] Request Starter
+- [X] Router starter
+- [X] Validator starter
+- [X] Interfaces starter
+- [X] Facades starter
