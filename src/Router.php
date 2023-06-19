@@ -69,7 +69,7 @@ class Router
 
         // Callable
         if (array_key_exists('resolver', $route)) {
-            return call_user_func($route['resolver'], $this->params);
+            return call_user_func($route['resolver'], ...$this->params);
         }
 
         # Controller Not Exists
