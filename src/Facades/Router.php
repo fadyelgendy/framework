@@ -4,11 +4,11 @@ namespace Lighter\Framework\Facades;
 
 class Router
 {
-    protected \Lighter\Framework\Router $router;
+    protected static \Lighter\Framework\Router $router;
 
     public function __construct()
     {
-        $this->router = new \Lighter\Framework\Router();
+        static::$router = new \Lighter\Framework\Router();
     }
 
     /**
@@ -20,6 +20,6 @@ class Router
      */
     public static function get(string $path, callable|array $resolver)
     {
-        (new static())->router->get($path, $resolver);
+        static::$router->get($path, $resolver);
     }
 }
