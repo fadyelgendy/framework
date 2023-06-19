@@ -77,7 +77,7 @@ class Application
      * @return mixed
      * @throws Exception
      */
-    public static function resolve(string $key)
+    public static function resolve(string $key): mixed
     {
         return static::$container->resolve($key);
     }

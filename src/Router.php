@@ -67,6 +67,9 @@ class Router
 
         $route = $this->routes[$uri];
 
+        # Resolve Route dependencies
+        $this->resolveDependencies($route);
+
         // Callable
         if (array_key_exists('resolver', $route)) {
             return call_user_func($route['resolver'], ...$this->params);
@@ -118,6 +121,7 @@ class Router
      * @param array $route
      * @return void
      * @throws ReflectionException
+     * @throws Exception
      */
     protected function resolveDependencies(array $route): void
     {
@@ -132,7 +136,7 @@ class Router
         # Resolve dependencies
         foreach ($reflection->getParameters() as $parameter) {
             if (is_object($parameter)) {
-                $class = "\App\Core\\" . ucwords($parameter->getName());
+                $class = $parameter->getType()->getName();
                 $this->params[] = Application::resolve($class);
             }
         }
