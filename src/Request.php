@@ -2,7 +2,9 @@
 
 namespace Lighter\Framework;
 
-class Request
+use Lighter\Framework\Interfaces\ArrayableInterface;
+
+class Request implements ArrayableInterface
 {
     public function __construct(protected Router $router)
     {
@@ -35,6 +37,11 @@ class Request
         return $this->router->redirect($path);
     }
 
+    /**
+     * Return Request as array
+     *
+     * @return array
+     */
     public function toArray(): array
     {
         return get_object_vars($this);

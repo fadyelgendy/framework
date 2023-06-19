@@ -10,6 +10,17 @@ class Router
     protected array $routes = [];
     protected array $params = [];
 
+    protected static ?Router $instance = null;
+
+    public static function getInstance(): self
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static();
+        }
+
+        return static::$instance;
+    }
+
     /**
      * Make a GET request
      *
@@ -58,7 +69,7 @@ class Router
 
         // Callable
         if (array_key_exists('resolver', $route)) {
-            return call_user_func($route['resolver'](...$this->params));
+            return call_user_func($route['resolver']);
         }
 
         # Controller Not Exists

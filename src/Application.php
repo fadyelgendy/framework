@@ -11,7 +11,7 @@ class Application
 
     public function __construct()
     {
-        $this->router = new Router();
+        $this->router = Router::getInstance();
         $this->request = new Request($this->router);
     }
 
@@ -41,34 +41,44 @@ class Application
     {
         static::setup();
 
-        $router = new Router();
-
         $uri = parse_url($_SERVER['REQUEST_URI'])['path'];
         $method = $_SERVER['REQUEST_METHOD'];
 
-        return $router->redirect($uri, $method);
+        return (new static())->router->redirect($uri, $method);
     }
 
+    /**
+     * Set App Container
+     *
+     * @param Container $container
+     * @return void
+     */
     public static function setContainer(Container $container): void
     {
         static::$container = $container;
     }
 
+    /**
+     * Bind Object for container
+     *
+     * @param string $key
+     * @param callable $resolver
+     * @return void
+     */
     public static function bind(string $key, callable $resolver): void
     {
         static::$container->bind($key, $resolver);
     }
 
     /**
+     * Resolve An object
+     *
+     * @param string $key
+     * @return mixed
      * @throws Exception
      */
     public static function resolve(string $key)
     {
         return static::$container->resolve($key);
-    }
-
-    public function toArray(): array
-    {
-        return get_object_vars($this);
     }
 }

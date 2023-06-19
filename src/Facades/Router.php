@@ -4,16 +4,11 @@ namespace Lighter\Framework\Facades;
 
 class Router
 {
-    protected ?\Lighter\Framework\Router $router = null;
+    protected \Lighter\Framework\Router $router;
 
-    /**
-     * Set Facade target object instance
-     *
-     * @return void
-     */
-    public function setup(): void
+    public function __construct()
     {
-           $this->router = new \Lighter\Framework\Router();
+           $this->router = \Lighter\Framework\Router::getInstance();
     }
 
     /**
@@ -25,7 +20,6 @@ class Router
      */
     public static function get(string $path, callable|array $resolver): void
     {
-        (new static())->setUp();
         (new static())->router->get($path, $resolver);
     }
 }
