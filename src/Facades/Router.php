@@ -4,7 +4,7 @@ namespace Lighter\Framework\Facades;
 
 class Router
 {
-    protected static \Lighter\Framework\Router $router;
+    protected static ?\Lighter\Framework\Router $router = null;
 
     public function __construct()
     {
@@ -18,7 +18,7 @@ class Router
      * @param callable|array $resolver
      * @return void
      */
-    public static function get(string $path, callable|array $resolver)
+    public static function get(string $path, callable|array $resolver): void
     {
         static::$router->get($path, $resolver);
     }
