@@ -100,3 +100,21 @@ if (!function_exists('app')) {
         return \Lighter\Framework\Application::getInstance();
     }
 }
+
+/**
+ * Config
+ */
+if (! function_exists('config')) {
+    function config(string $path): null|string
+    {
+        $path = explode('.', $path);
+        $file = $path[0] . ".php";
+
+        if (!file_exists($file)) {
+            return null;
+        }
+
+        $config = file_get_contents(dirname(__DIR__, 4) . "/config/" . $file);
+        return $config[$path[1]];
+    }
+}
