@@ -108,13 +108,13 @@ if (! function_exists('config')) {
     function config(string $path): null|string
     {
         $path = explode('.', $path);
-        $file = $path[0] . ".php";
+        $file = dirname(__DIR__, 5) .DIRECTORY_SEPARATOR ."config".DIRECTORY_SEPARATOR . $path[0] . ".php";
 
         if (!file_exists($file)) {
             return null;
         }
 
-        $config = file_get_contents(dirname(__DIR__, 4) . "/config/" . $file);
+        $config = require $file;
         return $config[$path[1]];
     }
 }
