@@ -8,6 +8,9 @@ class Application
 {
     protected Request $request;
     protected Router $router;
+    protected static ?Application $instance = null;
+
+    protected static Container $container;
 
     public function __construct()
     {
@@ -15,7 +18,19 @@ class Application
         $this->request = new Request($this->router);
     }
 
-    protected static Container $container;
+    /**
+     * Singleton for app
+     *
+     * @return Application
+     */
+    public static function getInstance(): Application
+    {
+        if (is_null(static::$instance)) {
+            static::$instance = new static();
+        }
+
+        return static::$instance;
+    }
 
     /**
      * Set up Application
@@ -34,17 +49,17 @@ class Application
     /**
      * Setup and run the application
      *
-     * @return mixed
+     * @return void
      * @throws Exception
      */
-    public static function run(): mixed
+    public static function run(): void
     {
         static::setup();
 
         $uri = parse_url($_SERVER['REQUEST_URI'])['path'];
         $method = $_SERVER['REQUEST_METHOD'];
 
-        return (new static())->router->redirect($uri, $method);
+        echo (new static())->router->redirect($uri, $method);
     }
 
     /**
@@ -56,6 +71,16 @@ class Application
     public static function setContainer(Container $container): void
     {
         static::$container = $container;
+    }
+
+    /**
+     * Return container
+     *
+     * @return Container
+     */
+    public static function container(): Container
+    {
+        return static::$container;
     }
 
     /**

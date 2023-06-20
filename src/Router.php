@@ -50,6 +50,16 @@ class Router
     }
 
     /**
+     * Return routes array
+     *
+     * @return array
+     */
+    public function routes(): array
+    {
+        return $this->routes;
+    }
+
+    /**
      * Redirect to a given route
      *
      * @param string $uri
@@ -66,6 +76,11 @@ class Router
         }
 
         $route = $this->routes[$uri];
+
+        # Method doesn't match
+        if ($route['method'] != $method) {
+            abort(new Exception("ERROR: {$route['method']} doesn't match {$method}"), 500);
+        }
 
         # Resolve Route dependencies
         $this->resolveDependencies($route);
@@ -125,20 +140,6 @@ class Router
      */
     protected function resolveDependencies(array $route): void
     {
-        # Resolver os callable type
-        if (array_key_exists('resolver', $route)) {
-            $reflection = new \ReflectionFunction($route['resolver']);
-        } else {
-            # Resolver is tuple type [controller, action]
-            $reflection = new \ReflectionMethod($route['controller'], $route['action']);
-        }
-
-        # Resolve dependencies
-        foreach ($reflection->getParameters() as $parameter) {
-            if (is_object($parameter)) {
-                $class = $parameter->getType()->getName();
-                $this->params[] = Application::resolve($class);
-            }
-        }
+        $this->params = Application::container()->resolveRouteDependencies($route);
     }
 }

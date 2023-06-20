@@ -52,12 +52,18 @@ if (!function_exists('error')) {
  * Abort
  */
 if (!function_exists('abort')) {
-    function abort(string $key, string $message, int $code = 422)
+    function abort(Throwable $exception, int $code = 422)
     {
-        http_response_code($code);
-        $_SESSION[$key] = $message;
-        header("Location: /");
-        exit();
+        http_response_code(500);
+        echo '<pre style="padding: 1rem; background: #d5d5d5">';
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        echo "<b style='color: red;'> Message: " . $exception->getMessage() . "</b><br>";
+        echo "File: " . $exception->getFile() . "<br>";
+        echo "Line: " . $exception->getLine() . "<br>";
+        echo "Trace: " . $exception->getTraceAsString();
+
+        echo '</pre>';
+        die();
     }
 }
 
@@ -67,9 +73,30 @@ if (!function_exists('abort')) {
 if (!function_exists('dd')) {
     function dd($vars): void
     {
-        echo '<pre>';
-        var_dump($vars);
+        echo '<pre style="padding: 1rem; background: #d5d5d5">';
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        print_r($vars);
         echo '</pre>';
         die();
+    }
+}
+
+/**
+ * render a view
+ */
+if (!function_exists('view')) {
+    function view(string $view, array $data = [])
+    {
+        return \Lighter\Framework\Facades\View::render($view, $data);
+    }
+}
+
+/**
+ * App Instance
+ */
+if (!function_exists('app')) {
+    function app(): \Lighter\Framework\Application
+    {
+        return \Lighter\Framework\Application::getInstance();
     }
 }

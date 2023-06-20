@@ -16,10 +16,32 @@ class Router
      *
      * @param string $path
      * @param callable|array $resolver
-     * @return void
+     * @return \Lighter\Framework\Router
      */
-    public static function get(string $path, callable|array $resolver): void
+    public static function get(string $path, callable|array $resolver): \Lighter\Framework\Router
     {
-        (new static())->router->get($path, $resolver);
+        return (new static())->router->get($path, $resolver);
+    }
+
+    /**
+     * Post Request
+     *
+     * @param string $path
+     * @param callable|array $resolver
+     * @return \Lighter\Framework\Router
+     */
+    public static function post(string $path, callable|array $resolver): \Lighter\Framework\Router
+    {
+        return (new static())->router->post($path, $resolver);
+    }
+
+    /**
+     * Routes
+     *
+     * @return array
+     */
+    public static function routes(): array
+    {
+        return (new static())->router->routes();
     }
 }
