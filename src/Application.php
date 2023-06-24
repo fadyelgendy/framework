@@ -14,8 +14,18 @@ class Application
 
     public function __construct()
     {
+        $this->request = Request::getInstance();
         $this->router = Router::getInstance();
-        $this->request = new Request($this->router);
+    }
+
+    public function router(): Router
+    {
+        return $this->router;
+    }
+
+    public function request(): Request
+    {
+        return $this->request;
     }
 
     /**
@@ -39,11 +49,15 @@ class Application
      */
     public static function setup(): void
     {
-        // session
         if (!isset($_SESSION)) {
+            session_cache_limiter('private');
+            session_cache_expire(10);
             session_start();
             $_SESSION['_token'] = md5(uniqid(microtime(), true));
         }
+
+        # populate Request
+        (new static())->request->prepare();
     }
 
     /**

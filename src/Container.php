@@ -3,6 +3,8 @@
 namespace Lighter\Framework;
 
 use Exception;
+use Lighter\Framework\Facades\Logger;
+use ReflectionException;
 
 class Container
 {
@@ -19,7 +21,9 @@ class Container
     public function resolve(string $key)
     {
         if (! array_key_exists($key, static::$bindings)) {
-            throw new Exception("ERROR: Can Not resolve {$key}");
+            $exception = new Exception("ERROR: Can Not resolve {$key}");
+            Logger::error($exception);
+            throw $exception;
         }
 
         return call_user_func(static::$bindings[$key]);
@@ -30,7 +34,8 @@ class Container
      *
      * @param array $route
      * @return array
-     * @throws \ReflectionException
+     * @throws ReflectionException
+     * @throws Exception
      */
     public function resolveRouteDependencies(array $route): array
     {

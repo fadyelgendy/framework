@@ -1,5 +1,11 @@
 <?php
 
+use JetBrains\PhpStorm\NoReturn;
+
+const HTTP_OK = 200;
+const HTTP_SERVER_ERROR = 500;
+const HTTP_VALIDATION_ERROR = 422;
+
 /**
  * Asset path, css, js
  */
@@ -44,7 +50,57 @@ if (!function_exists('csrf_token')) {
 if (!function_exists('error')) {
     function error(string $key): null|string
     {
-        return $_SESSION[$key] ?? null;
+        return $_SESSION["error_$key"] ?? null;
+    }
+}
+
+/**
+ * Flash Messages
+ */
+if (!function_exists('flash')) {
+    function flash(array $data): void
+    {
+        foreach ($data as $key => $value) {
+            $_SESSION[$key] = $value;
+        }
+    }
+}
+
+/**
+ * Flash errors
+ */
+if (!function_exists('flash_errors')) {
+    function flash_errors(array $data): void
+    {
+        foreach ($data as $key => $value) {
+            $_SESSION["error_$key"] = $value;
+        }
+    }
+}
+
+/**
+ * Old input
+ */
+if (!function_exists('old')) {
+    function old(string $key): string {
+        return "";
+    }
+}
+
+/**
+ * Redirect to a given Route
+ */
+if (!function_exists('redirect')) {
+    /**
+     * @throws Exception
+     */
+    function redirect(string $route, $status_code = HTTP_OK)
+    {
+        unset($_POST);
+        http_response_code($status_code);
+        app()->router()->redirect($route);
+        header("Location: $route");
+        exit();
     }
 }
 
@@ -74,7 +130,9 @@ if (!function_exists('dd')) {
     function dd($vars): void
     {
         echo '<pre style="padding: 1rem; background: #d5d5d5">';
-        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+        echo "<b style='background:#000; color:#FFF; padding: 0.3rem'>";
+        debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
+        echo "</b> \n";
         print_r($vars);
         echo '</pre>';
         die();
@@ -104,11 +162,11 @@ if (!function_exists('app')) {
 /**
  * Config
  */
-if (! function_exists('config')) {
+if (!function_exists('config')) {
     function config(string $path): null|string
     {
         $path = explode('.', $path);
-        $file = dirname(__DIR__, 5) .DIRECTORY_SEPARATOR ."config".DIRECTORY_SEPARATOR . $path[0] . ".php";
+        $file = dirname(__DIR__, 5) . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . $path[0] . ".php";
 
         if (!file_exists($file)) {
             return null;

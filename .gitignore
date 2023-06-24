@@ -2,3 +2,5 @@
 vendor
 views
 index.php
+app.log
+.htaccess

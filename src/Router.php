@@ -3,6 +3,7 @@
 namespace Lighter\Framework;
 
 use Exception;
+use Lighter\Framework\Facades\Logger;
 use ReflectionException;
 
 class Router
@@ -64,22 +65,28 @@ class Router
      *
      * @param string $uri
      * @param string $method
+     * @param bool $redirect
      * @return mixed
      *
+     * @throws ReflectionException
      * @throws Exception
      */
     public function redirect(string $uri, string $method = 'GET'): mixed
     {
         # Route Not Exists
         if (!array_key_exists($uri, $this->routes)) {
-            throw new Exception("ERROR: no route found for {$uri}");
+            $exception = new Exception("ERROR: no route found for {$uri}");
+            Logger::error($exception);
+            throw $exception;
         }
 
         $route = $this->routes[$uri];
 
         # Method doesn't match
         if ($route['method'] != $method) {
-            abort(new Exception("ERROR: {$route['method']} doesn't match {$method}"), 500);
+            $exception = new Exception("ERROR: {$route['method']} doesn't match {$method}");
+            Logger::error($exception);
+            throw $exception;
         }
 
         # Resolve Route dependencies
@@ -92,18 +99,21 @@ class Router
 
         # Controller Not Exists
         if (!class_exists($route['controller'])) {
-            throw new Exception("ERROR: {$route['controller']} is not defined!");
+            $exception = new Exception("ERROR: {$route['controller']} is not defined!");
+            Logger::error($exception);
+            throw $exception;
         }
 
         $controller = new $route['controller']();
 
         # Action methods not defined
         if (!method_exists($controller, $route['action'])) {
-            throw new Exception("ERROR: {$route['action']} is not defined in {$route['controller']}");
+            $exception = new Exception("ERROR: {$route['action']} is not defined in {$route['controller']}");
+            Logger::error($exception);
+            throw $exception;
         }
 
         return $controller->{$route['action']}(...$this->params);
-
     }
 
     /**

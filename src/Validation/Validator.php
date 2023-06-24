@@ -1,11 +1,14 @@
 <?php
 
-namespace Lighter\Framework;
+namespace Lighter\Framework\Validation;
 
 use Exception;
+use Lighter\Framework\Facades\Logger;
+use Lighter\Framework\Interfaces\ValidationInterface;
 
-class Validator
+class Validator implements ValidationInterface
 {
+    const BYTE_SIZE = 8;
     protected array $errors = [];
     protected bool $valid = true;
 
@@ -21,7 +24,9 @@ class Validator
     {
         foreach ($rules as $key => $value) {
             if (!is_array($value)) {
-                throw new Exception('ERROR: validation rule must be array type');
+                $exception = new Exception('ERROR: validation rule must be array type');
+                Logger::error($exception);
+                throw $exception;
             }
 
             foreach ($value as $func) {
@@ -35,7 +40,9 @@ class Validator
 
                 # check method exists
                 if (!method_exists($this, $func)) {
-                    throw new \BadMethodCallException("ERROR: {$func} doesn't exists!");
+                    $exception = new \BadMethodCallException("ERROR: {$func} doesn't exists!");
+                    Logger::error($exception);
+                    throw $exception;
                 }
 
                 $this->{$func}($key, $data[$key], $extraParams);
@@ -45,8 +52,17 @@ class Validator
         return $this;
     }
 
+    /**
+     * Check if data is valid or not.
+     *
+     * @return bool
+     */
     public function invalid(): bool
     {
+        if (!empty($this->errors)) {
+            $this->valid = false;
+        }
+
         return $this->valid == false;
     }
 
@@ -55,6 +71,29 @@ class Validator
         return $this->errors;
     }
 
+    public function required(string $key, $value): self
+    {
+        $value = !is_string($value) ?: trim($value);
+
+        if (!isset($key)) { # Value not exists
+            $this->errors[$key] = "{$key} Is required!.";
+        } else if (empty($value) || strlen($value) == 0) { # Value empty
+            $this->errors[$key] = "{$key} Can not be empty!.";
+        } else {
+            unset($this->errors[$key]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Minimum length
+     *
+     * @param string $key
+     * @param $value
+     * @param int $length
+     * @return $this
+     */
     public function min(string $key, $value, int $length): self
     {
         // Max Length
@@ -62,48 +101,38 @@ class Validator
             $this->errors[$key] = "{$key} Must be at least {$length} characters!";
         }
 
-        $this->valid = false;
+        return $this;
+    }
 
-        return new static();
+    /**
+     * Check maximum length
+     *
+     * @param string $key
+     * @param $value
+     * @param int $length
+     * @return $this
+     */
+    public function max(string $key, $value, int $length): self
+    {
+        // Max Length
+        if (strlen($value) < $length) {
+            $this->errors[$key] = "{$key} Must not be greater than {$length} characters!";
+        }
+
+        return $this;
     }
 
     /**
      * Validate string, return back if error, nothing if passed
      *
      * @param string $key
-     * @param string $value
-     * @param int $min
-     * @param int $max
+     * @param $value
      * @return void
      */
-    public function string(string $key, string $value, int $min = 4, int $max = 255): void
+    public function string(string $key, $value): void
     {
-        $value = trim($value);
-
-        // Value exists
-        if (!isset($value)) {
-            abort($key, "{$key} Is required!.");
-        }
-
-        // Value Not empty
-        if (empty($value)) {
-            abort($key, "{$key} Can not be empty!.");
-        }
-
-        $strlen = strlen($value);
-        // Min Length
-        if ($strlen < $min) {
-            abort($key, "{$key} Must be at least {$min} characters!");
-        }
-
-        // Max Length
-        if ($strlen < $min) {
-            abort($key, "{$key} Must not be greater than {$max} characters!");
-        }
-
-        // Value not matched
         if (!preg_match("/[a-zA-Z]/", $value)) {
-            abort($key, "{$key} is invalid!.");
+            $this->errors[$key] = "{$key} is invalid!.";
         }
     }
 
@@ -132,7 +161,7 @@ class Validator
 
         $sizeInMB = $size / 1024;
         // Size Not Match
-        if (filesize($file_name) > ($size * BYTE_SIZE)) {
+        if (filesize($file_name) > ($size * self::BYTE_SIZE)) {
             abort($type, "File size must be less than or equal to {$sizeInMB}MB!");
         }
 
