@@ -22,7 +22,7 @@ class View implements \Lighter\Framework\Interfaces\ViewInterface
     {
         extract($data);
 
-        $file = is_null(config('app.view_path')) ? realpath(dirname(__DIR__, 2)) : config('app.view_path') ;
+        $file = is_null(config('app.view_path')) ? realpath(dirname(__DIR__, 5)) : config('app.view_path') ;
 
         ob_start();
         include($file .DIRECTORY_SEPARATOR . "views" .DIRECTORY_SEPARATOR. $view.".view.php");
