@@ -25,7 +25,7 @@ class Logger implements \Lighter\Framework\Interfaces\LoggerInterface
      */
     public function output(string $data, string $type): void
     {
-        $file = fopen(dirname(__DIR__, 2) . "/app.log", 'a+');
+        $file = fopen(dirname(__DIR__, 5) . "/app.log", 'a+');
         $data = "[" . date('Y-m-d H:i:s') . "] <APP_ENV> " . strtoupper($type) . ": " . $data ."\n";
         fwrite($file, $data);
         fclose($file);
