@@ -12,9 +12,7 @@ const HTTP_VALIDATION_ERROR = 422;
 if (!function_exists('asset')) {
     function asset(string $path): string
     {
-        $assets_path = DIRECTORY_SEPARATOR . "assets";
-
-        return $assets_path . DIRECTORY_SEPARATOR . $path;
+        return public_path() . "assets" . DIRECTORY_SEPARATOR . $path;
     }
 }
 
@@ -24,7 +22,7 @@ if (!function_exists('asset')) {
 if (!function_exists('public_path')) {
     function public_path(): string
     {
-        return "public";
+        return (($_SERVER['REQUEST_SCHEME'] == 'http') ? "http" : "https") . "://" . $_SERVER['HTTP_HOST'] . "/";
     }
 }
 /**
@@ -33,7 +31,7 @@ if (!function_exists('public_path')) {
 if (!function_exists('views_path')) {
     function views_path(): string
     {
-        return dirname(__FILE__) . "/views/";
+        return dirname(__DIR__, 5) . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR;
     }
 }
 
@@ -174,5 +172,17 @@ if (!function_exists('config')) {
 
         $config = require $file;
         return $config[$path[1]];
+    }
+}
+
+/**
+* Translation
+*/
+if (! function_exists('trans')) {
+    function trans(string $key) {
+        $locale = config('app.app_locale');
+        $translation_file = dirname(__DIR__, 5) . DIRECTORY_SEPARATOR .'languages'. DIRECTORY_SEPARATOR. $locale. '.json';
+        $contents = json_decode(file_get_contents($translation_file), true);
+        echo $contents[$key] ?? $key;
     }
 }
